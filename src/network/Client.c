@@ -136,12 +136,11 @@ int swClient_create(swClient *cli, int type, int async)
 #ifdef SW_USE_OPENSSL
 int swClient_enable_ssl_encrypt(swClient *cli)
 {
-    cli->ssl_context = swSSL_get_client_context(cli->ssl_method);
+    cli->ssl_context = swSSL_get_context(cli->ssl_method, cli->ssl_cert_file, cli->ssl_key_file);
     if (cli->ssl_context == NULL)
     {
         return SW_ERR;
     }
-    cli->open_ssl = 1;
     cli->socket->ssl_send = 1;
     return SW_OK;
 }
@@ -254,6 +253,14 @@ static int swClient_close(swClient *cli)
             swSSL_close(cli->socket);
         }
         swSSL_free(cli->ssl_context);
+        if (cli->ssl_cert_file)
+        {
+            free(cli->ssl_cert_file);
+        }
+        if (cli->ssl_key_file)
+        {
+            free(cli->ssl_key_file);
+        }
     }
 #endif
 
